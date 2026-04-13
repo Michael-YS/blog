@@ -25,6 +25,10 @@ export interface SiteBasicConfig {
   breadcrumbHome?: string;
   /** 时区配置 (IANA 格式) @default 'Asia/Shanghai' */
   timezone?: string;
+  /** ICP filing number. Supports plain text or { text, link } format */
+  icp?: string | { text: string; link?: string };
+  /** Enable slug transliteration (converts CJK characters to pinyin/romaji) @default false */
+  enableSlugTransliteration?: boolean;
 }
 
 // =============================================================================
@@ -437,6 +441,12 @@ export interface UmamiConfig {
   enabled: boolean;
   id: string;
   endpoint: string;
+  statistics_display?: {
+    /** Umami share link token (read-only, safe to expose on client) */
+    token: string;
+    article_page_views: boolean;
+    footer_site_stats: boolean;
+  };
 }
 
 export interface AnalyticsConfig {
@@ -532,7 +542,22 @@ export interface BgmAudioGroup {
 
 export interface BgmConfig {
   enabled?: boolean;
+  /** Meting API endpoint URL. Defaults to 'https://163.hyc.moe/' */
+  metingApi?: string;
   audio?: BgmAudioGroup[];
+}
+
+// =============================================================================
+// Bangumi (Media Tracking) Configuration
+// =============================================================================
+
+export interface BangumiConfig {
+  /** Bangumi username or numeric ID */
+  userId: string;
+  /** Navigation display name, defaults to i18n key 'nav.bangumi' */
+  label?: string;
+  /** Navigation icon (Iconify format), defaults to 'ri:bilibili-fill' */
+  icon?: string;
 }
 
 // =============================================================================
@@ -577,6 +602,8 @@ export interface SiteYamlConfig {
   categoryMap?: Record<string, string>; // TODO: i18n, now use eg: { '随笔': 'life' }
   /** Background music player configuration */
   bgm?: BgmConfig;
+  /** Bangumi media tracking page — comment out to disable */
+  bangumi?: BangumiConfig;
   christmas?: ChristmasConfig;
   /** Development tools configuration (dev only) */
   dev?: DevConfig;

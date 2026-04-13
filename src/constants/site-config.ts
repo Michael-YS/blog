@@ -1,17 +1,22 @@
 // Import YAML config directly - processed by @rollup/plugin-yaml
 
 import type {
+  AnalyticsConfig,
+  BangumiConfig,
   BgmAudioGroup,
   CommentConfig,
   DevConfig,
   FeaturedCategory,
   FeaturedSeriesItem,
   I18nConfig,
+  RouterItem,
   SiteBasicConfig,
 } from '@lib/config/types';
 import { DEFAULT_TIMEZONE, isValidTimezone } from '@lib/timezone';
+import { createUmamiStatsConfig } from '@lib/umami-stats';
+import type { UmamiStatsConfig } from '@/types/umami-stats';
 import yamlConfig from '../../config/site.yaml';
-import { isReservedSlug, RESERVED_ROUTES } from './router';
+import { routers as baseRouters, isReservedSlug, RESERVED_ROUTES } from './router';
 
 /**
  * Runtime site configuration
@@ -192,9 +197,18 @@ export const siteConfig: SiteConfig = {
   breadcrumbHome: yamlConfig.site.breadcrumbHome,
   featuredCategories: yamlConfig.featuredCategories,
   featuredSeries: normalizeFeaturedSeries(yamlConfig.featuredSeries),
+  enableSlugTransliteration: yamlConfig.site.enableSlugTransliteration,
 };
 
 export const socialConfig: SocialConfig = yamlConfig.social ?? {};
+
+// ICP filing config — normalize string shorthand to { text } object
+export const icpConfig: { text: string; link?: string } | undefined = (() => {
+  const raw = yamlConfig.site.icp;
+  if (!raw) return undefined;
+  if (typeof raw === 'string') return { text: raw };
+  return raw;
+})();
 
 const { title, alternate, subtitle } = siteConfig;
 
@@ -208,14 +222,7 @@ export const seoConfig = {
 const BUILT_IN_COVERS = Array.from({ length: 21 }, (_, i) => `/img/cover/${i + 1}.webp`);
 export const defaultCoverList = yamlConfig?.defaultCoverList?.length ? yamlConfig.defaultCoverList : BUILT_IN_COVERS;
 
-// Analytics config types
-type AnalyticsConfig = {
-  umami?: {
-    enabled: boolean;
-    id: string;
-    endpoint: string;
-  };
-};
+// Analytics config — reuses AnalyticsConfig from config/types.ts
 
 // Christmas config types
 type ChristmasConfig = {
@@ -264,6 +271,21 @@ export const contentConfig: ContentConfig = yamlConfig.content || {};
 // Map YAML analytics config
 export const analyticsConfig: AnalyticsConfig = yamlConfig.analytics || {};
 
+const _umami = analyticsConfig?.umami;
+
+/** Pre-computed site-wide pageview stats config. null when disabled or token missing. */
+export const umamiSiteStatsConfig: UmamiStatsConfig | null =
+  _umami?.enabled && _umami.statistics_display?.token && _umami.statistics_display?.footer_site_stats
+    ? createUmamiStatsConfig(_umami)
+    : null;
+
+/** Create per-page article stats config. Returns null when disabled or token missing. */
+export function createArticleStatsConfig(href: string): UmamiStatsConfig | null {
+  return _umami?.enabled && _umami.statistics_display?.token && _umami.statistics_display?.article_page_views
+    ? createUmamiStatsConfig(_umami, href)
+    : null;
+}
+
 // Map YAML christmas config with defaults
 export const christmasConfig: ChristmasConfig = yamlConfig.christmas || {
   enabled: false,
@@ -286,10 +308,27 @@ export const christmasConfig: ChristmasConfig = yamlConfig.christmas || {
 };
 
 // Map YAML bgm config
-export const bgmConfig: { enabled: boolean; audio: BgmAudioGroup[] } = {
+export const bgmConfig: { enabled: boolean; metingApi?: string; audio: BgmAudioGroup[] } = {
   enabled: yamlConfig.bgm?.enabled ?? (yamlConfig.bgm?.audio?.length ?? 0) > 0,
+  metingApi: yamlConfig.bgm?.metingApi,
   audio: yamlConfig.bgm?.audio ?? [],
 };
+
+// Bangumi media tracking config — null when disabled (section commented out in YAML)
+export const bangumiConfig: BangumiConfig | null = yamlConfig.bangumi ?? null;
+
+// Navigation routers with auto-injected bangumi entry
+export const routers: RouterItem[] = bangumiConfig
+  ? [
+      ...baseRouters,
+      {
+        name: bangumiConfig.label,
+        nameKey: bangumiConfig.label ? undefined : 'nav.bangumi',
+        path: '/bangumi',
+        icon: bangumiConfig.icon ?? 'ri:bilibili-fill',
+      },
+    ]
+  : baseRouters;
 
 // Map YAML dev tools config with defaults (dev only)
 export const devConfig: DevConfig = {

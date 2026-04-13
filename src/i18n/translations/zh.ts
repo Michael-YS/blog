@@ -16,6 +16,7 @@ export const uiStrings = {
   'nav.about': '关于',
   'nav.music': '歌单',
   'nav.weekly': '周刊',
+  'nav.bangumi': '追番',
 
   // ── Common ──────────────────────────────────────────────────
   'common.search': '搜索',
@@ -174,6 +175,9 @@ export const uiStrings = {
   'footer.wordUnit': '字',
   'footer.postUnit': '篇',
 
+  // ── Analytics Stats ─────────────────────────────────────────
+  'stats.pageviews': '访问量',
+
   // ── Pagination ──────────────────────────────────────────────
   'pagination.prev': '上一页',
   'pagination.next': '下一页',
@@ -315,4 +319,23 @@ export const uiStrings = {
 
   // ── Comment ────────────────────────────────────────────────
   'comment.prompt': '喜欢的话，留下你的评论吧～',
+
+  // ── Bangumi ───────────────────────────────────────────────
+  'bangumi.title': '追番',
+  'bangumi.description': '我的追番记录',
+  'bangumi.anime': '动画',
+  'bangumi.book': '书籍',
+  'bangumi.music': '音乐',
+  'bangumi.game': '游戏',
+  'bangumi.real': '三次元',
+  'bangumi.all': '全部',
+  'bangumi.wish': '想看',
+  'bangumi.collected': '看过',
+  'bangumi.watching': '在看',
+  'bangumi.onHold': '搁置',
+  'bangumi.dropped': '抛弃',
+  'bangumi.noImage': '暂无图片',
+  'bangumi.noItems': '暂无收藏',
+  'bangumi.error': '加载失败，请稍后重试',
+  'bangumi.retry': '重试',
 } as const;
